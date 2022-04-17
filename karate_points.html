@@ -1,83 +1,270 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <script src="http://code.jquery.com/jquery-latest.min.js" />
-    <script type="text/javascript">
-      function UpdateTotal(sel){
-        $("#total").val("");
-        float total;
-        for(i=1;i<=5;i++){
-          let input = $("#point" + i).val();
-          if (!input){
-            return;
-          }
-          let point = Number.parseFloat(input);
-          if (point < 5.0 || point > 10.0){
-            return;
-          }
-          total += point
-        }
-        $("#total").val(total);
+    <meta charset="utf-8" />
+    <title>空手採点ツール</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <style type="text/css">
+      td{text-align: center}
+      .pointlist{
+        user-select: none;
+        box-sizing: border-box;
+        position: relative;
+        border-radius: 4px;
+        border-style: solid;
+        border-width: 0;
+        border-color: gray;
+        width: 100%;
+        display: inline-block;
+        text-align: center;
       }
-      function selectpoint(sel){
-        let inputid = "#point" + sel.id.substr(sel.id.length - 1, 1);
-        $(inputid).val(sel.value);
+      div#totalpoint{
+        color: red;
+      }
+      div#addbtn{
+        bkcolor: gray;
+      }
+    </style>
+    <script type="text/javascript">
+      class point_rec{
+        constructor(playno, points){
+          this.playno = playno;
+          this.points = points;
+        }
+        get total(){
+          let sum = this.points.reduce((a,b) => a + b, 0);
+          let max = this.points.reduce((a,b) => a > b ? a : b);
+          let min = this.points.reduce((a,b) => a < b ? a : b);
+          return sum - min - max;
+        }
+        get minof3(){
+          let forsort = this.points.concat();
+          forsort.sort((a,b)=> a - b);
+          return forsort[1];
+        }
+        get maxof3(){
+          let forsort = this.points.concat();
+          forsort.sort((a,b)=> a - b);
+          return forsort[3];
+        }
+        get minof5(){
+          return this.points.reduce((a,b) => a < b ? a : b);
+        }
+        get maxof5(){
+          return this.points.reduce((a,b) => a > b ? a : b);
+        }
+      }
+      //setting
+      var point_inv;
+      var sort_order;
+      var points_list = [];
+      $(document).ready(function(){
+        //設定の読み込み
+        loadSettings();
+        //点数の初期化
+        initpointtable();
+        //
+        $("#playercount").text(points_list.length);
+      });
+      function readStorage(key, defaultval){
+        let val = localStorage.getItem(key);
+        if (val !== null){
+          return val;
+        }else{
+          return defaultval;
+        }
+      }
+      function loadSettings(){
+        //return;
+        point_inv = parseFloat(readStorage('point_inv', "0.2"));
+        let strval = readStorage('sort_order', JSON.stringify(["total","minof3","maxof3","minof5","maxof5"]));
+        sort_order = JSON.parse(strval);
+        strval = readStorage('points_list', JSON.stringify([]));
+        points_list = JSON.parse(strval);
+
+        //check
+        if (point_inv != 0.1 && point_inv != 0.2){
+          point_inv = 0.2;
+        }
+        console.log("point_inv=" + point_inv);
+
+        for(i=0;i<sort_order.length;i++){
+          switch(sort_order[i]){
+            case "total":
+            case "minof3":
+            case "maxof3":
+            case "minof5":
+            case "maxof5":
+              break;
+            default:
+              alert("わからない設定" + sort_order[i] + "が設定されたが、無視する");
+              break;
+          }
+        }
+        console.log("sort_order=" + sort_order);
+      }
+      function saveSettings(){
+        localStorage.setItem("point_inv", point_inv);
+        localStorage.setItem("sort_order", JSON.stringify(sort_order));
+        localStorage.setItem("points_list", JSON.stringify(points_list));
+      }
+      function initSettings(){
+        localStorage.removeItem("point_inv");
+        localStorage.removeItem("sort_order");
+        localStorage.removeItem("points_list");
+        loadSettings();
+      }
+      function readCookie(){
+        var cookies = document.cookie.split(";");
+        for (i=0;i<cookies.length; i++){
+          var pairs = cookies[i].split("=");
+          switch(pairs[0]){
+            case 'point_inv':
+              point_inv = Number(pairs[1]);
+              break;
+            case 'sort_order':
+              sort_order = pairs[1];
+              break;
+            default:
+          }
+        }
+      }
+      function initpointtable(){
+        //let tbody = $("#points>tbody");
+        //if (tbody === null){
+        //  alert("tbodyがない");
+        //  return false;
+        //}
+        //tbody.empty();
+        //return false;
+        let options="";
+        for(j=5.0;j<=10.0;j+=point_inv){
+          let ptext = j.toFixed(1);
+          options += "<option value=" + ptext + ">" + ptext + "</option>";
+        }
+        for(i=1;i<=5;i++){
+          let sel = $("#pointselect" + i);
+          if (sel === null){
+            alert("#pointselect" + i +"がない");
+            continue;
+          }
+          sel.empty();
+          sel.append(options);
+        }
+      }
+      function onselectpoint(sel){
+        console.log(sel.id);
+        let inputid = "point" + sel.id.substr(sel.id.length-1,1);
+        $("#" + inputid).val(sel.value);
+        computetotal();
+      }
+      function computetotal(){
+        $("#totalpoint").val("");
+        let total = 0.0;
+        let min = 10.0;
+        let max = 5.0;
+        for(i=1;i<=5;i++){
+          let point = $("#point"+i).val();
+          if (!point){
+            return;
+          }
+          let num = parseFloat(point);
+          if (num < min){
+            min = num;
+          }
+          if (num > max){
+            max = num;
+          }
+          total += num;
+        }
+        $("#totalpoint").text((total - min - max).toFixed(1));
+      }
+      function addrecord(){
+        //入力チェック
+        let player = $("#PlayerNo").val();
+        if (!player || player.length == 0){
+          if (! confirm("選手番号が未入力です。そのまま記録するか？")){
+            return;
+          }
+        }
+        let points = [];
+        for(i=1;i<=5;i++){
+          let point = $("#point"+i).val();
+          if (!point){
+            if (!confirm("審判"+i+"が採点していない。そのまま記録するか？")){
+              return;
+            }else{
+              continue;
+            }
+          }
+          points[i] = parseFloat(point);
+        }
+        //追加
+        let rec = new point_rec(player, points);
+        points_list.push(rec);
+        saveSettings();
+        $("#playercount").text(points_list.length);
+        clearinput();
+      }
+      function clearinput(){
+        //input
+        $("input").val("");
+        //select
+        $("option:selected").prop("selected", false);
+      }
+      function showrecs(){
+        
       }
     </script>
   </head>
   <body>
-    <table>
+    <button onclick="initSettings();" >記録をクリア</button>
+    <button onclick="showrecs();" >記録を表示</button>
+    <br>
+    <table id="points">
       <thead>
         <tr>
-          <td><input type="text" id="point1"/></td>
-          <td><input type="text" id="point2"/></td>
-          <td><input type="text" id="point3"/></td>
-          <td><input type="text" id="point4"/></td>
-          <td><input type="text" id="point5"/></td>
-          <td><div id="total"></div></td>
+          <th>選手番号</th>
+          <th>審判1</th>
+          <th>審判2</th>
+          <th>審判3</th>
+          <th>審判4</th>
+          <th>審判5</th>
+          <th>得点</th>
+        </tr>
+        <tr>
+          <td><input type="number" id="PlayerNo" class="PlayerNo"/></td>
+          <td><input type="number" id="point1" class="point" /></td>
+          <td><input type="number" id="point2" class="point" /></td>
+          <td><input type="number" id="point3" class="point" /></td>
+          <td><input type="number" id="point4" class="point" /></td>
+          <td><input type="number" id="point5" class="point" /></td>
+          <td><div id="totalpoint"></div></td>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><select id="point1" onchange="selectpoint(this);">
-            <option value=6.0 >6.0</option>
-            <option value=6.2 >6.2</option>
-            <option value=6.4 >6.4</option>
-            <option value=6.6 >6.6</option>
-            <option value=6.8 >6.8</option>
+          <td>記録された数:<div id="playercount"></div></td>
+          <td>
+            <select id="pointselect1" class="pointlist" size="10" required onchange="onselectpoint(this);">
+              <option value=6.0>6.0</option>
+              <option value=6.2>6.2</option>
+              <option value=6.4>6.4</option>
+              <option value=6.5>6.6</option>
+              <option value=6.8>6.8</option>
+              <option value=7.0>7.0</option>
             </select>
           </td>
-          <td><select id="point2" onchange="UpdateTotal(this);">
-            <option value=6.0 >6.0</option>
-            <option value=6.2 >6.2</option>
-            <option value=6.4 >6.4</option>
-            <option value=6.6 >6.6</option>
-            <option value=6.8 >6.8</option>
-            </select>
+          <td><select id="pointselect2" class="pointlist" size="10" required onchange="onselectpoint(this);" />
           </td>
-          <td><select id="point3" onchange="UpdateTotal(this);">
-            <option value=6.0 >6.0</option>
-            <option value=6.2 >6.2</option>
-            <option value=6.4 >6.4</option>
-            <option value=6.6 >6.6</option>
-            <option value=6.8 >6.8</option>
-            </select>
+          <td><select id="pointselect3" class="pointlist" size="10" required onchange="onselectpoint(this);" />
           </td>
-          <td><select id="point4" onchange="UpdateTotal(this);">
-            <option value=6.0 >6.0</option>
-            <option value=6.2 >6.2</option>
-            <option value=6.4 >6.4</option>
-            <option value=6.6 >6.6</option>
-            <option value=6.8 >6.8</option>
-            </select>
+          <td><select id="pointselect4" class="pointlist" size="10" required onchange="onselectpoint(this);" />
           </td>
-          <td><select id="point5" onchange="UpdateTotal(this);">
-            <option value=6.0 >6.0</option>
-            <option value=6.2 >6.2</option>
-            <option value=6.4 >6.4</option>
-            <option value=6.6 >6.6</option>
-            <option value=6.8 >6.8</option>
-            </select>
+          <td><select id="pointselect5" class="pointlist" size="10" required onchange="onselectpoint(this);" />
           </td>
-      </tbody>
+          <td><button id="addbtn" onclick="addrecord()">記録</button></td>
+        </tr>
+    </table>
   </body>
 </html>
