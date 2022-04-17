@@ -32,16 +32,25 @@
         height: 65vh;
         overflow: auto;
       }
-      option{
-        border: 1;
+      .pointoption{
+        border: 1px solid black;
+        height: 2em;
+        vertical-align: middle;
+      }
+      .pointoption:active {
+        background-color: lightblue;
       }
       table#points{
       }
       div#totalpoint{
         color: red;
+        background-color: lightgoldenrodyellow;
       }
-      div#addbtn{
-        bkcolor: gray;
+      .point{
+        background-color: lightgoldenrodyellow;
+      }
+      .PlayerNo{
+        background-color: lightgoldenrodyellow;
       }
     </style>
     <script type="text/javascript">
@@ -160,7 +169,7 @@
         localStorage.removeItem("sort_order");
         localStorage.removeItem("points_list");
         loadSettings();
-        $("#playercount").text(points_list.length);
+        clearinput();
       }
       function readCookie(){
         var cookies = document.cookie.split(";");
@@ -199,7 +208,7 @@
         computetotal();
       }
       function computetotal(){
-        $("#totalpoint").val("");
+        $("#totalpoint").val("0.0");
         let total = 0.0;
         let min = 10.0;
         let max = 5.0;
@@ -250,7 +259,8 @@
         //input
         $("input").val("");
         //select
-        $("#totalpoint").text("");
+        $("#totalpoint").text("0.0");
+        $("#playercount").text(points_list.length);
       }
       function showrecs(){
         //html
@@ -313,7 +323,7 @@
           <th>選手番号</th>
           <td><input type="number" id="PlayerNo" class="PlayerNo"/></td>
           <th>得点</th>
-          <td><div id="totalpoint"></div></td>
+          <td><div id="totalpoint">0.0</div></td>
           <td><button id="addbtn" onclick="addrecord()">記録</button></td>
         </tr>
         <tr>
@@ -392,9 +402,10 @@
         </tr>
     </table>
     <br>
-    <button id="scrollto6" onclick="scrollto(6.0)">6へ</button>
-    <button id="scrollto7" onclick="scrollto(7.0)">7へ</button>
-    <button id="scrollto8" onclick="scrollto(8.0)">8へ</button>
-    <button id="scrollto9" onclick="scrollto(9.0)">9へ</button>
+    <button id="scrollto5" onclick="scrollto(5.0)">5.0へ</button>
+    <button id="scrollto6" onclick="scrollto(6.0)">6.0へ</button>
+    <button id="scrollto7" onclick="scrollto(7.0)">7.0へ</button>
+    <button id="scrollto8" onclick="scrollto(8.0)">8.0へ</button>
+    <button id="scrollto9" onclick="scrollto(9.0)">9.0へ</button>
   </body>
 </html>
