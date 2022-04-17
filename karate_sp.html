@@ -165,6 +165,9 @@
         localStorage.setItem("points_list", JSON.stringify(points_list));
       }
       function initSettings(){
+        if (points_list.length>0 && !confirm("記録" + points_list.length + "個と設定をすべてクリアしていいですか？")){
+          return;
+        }
         localStorage.removeItem("point_inv");
         localStorage.removeItem("sort_order");
         localStorage.removeItem("points_list");
