@@ -142,6 +142,7 @@
         if (point_inv != 0.1 && point_inv != 0.2){
           point_inv = 0.2;
         }
+        $("#changeinv").text(point_inv + "刻み");
         console.log("point_inv=" + point_inv);
 
         for(i=0;i<sort_order.length;i++){
@@ -204,6 +205,17 @@
           sel.empty();
           sel.append(options);
         }
+      }
+      function changeinv(){
+        if (point_inv == 0.2){
+          point_inv = 0.1;
+        }else{
+          point_inv = 0.2;
+        }
+        localStorage.setItem("point_inv", point_inv);
+        //refresh
+        $("#changeinv").text(point_inv + "刻み");
+        initpointtable();
       }
       function onselectpoint(sel, opt){
         let inputid = "point" + sel;
@@ -319,6 +331,7 @@
     記録数:<span id="playercount"></span>
     <button onclick="initSettings();" >記録をクリア</button>
     <button onclick="showrecs();" >記録を表示</button>
+    <button id="changeinv" onclick="changeinv();">刻み</button>
     <br>
     <table id="points">
       <thead>
