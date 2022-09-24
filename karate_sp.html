@@ -197,6 +197,9 @@
             alert("#pointlist" + i +"がない");
             continue;
           }
+          //step
+          $("#point" + i).attr('step', point_inv);
+          //option
           let options="";
           for(let j=5.0;j<=10.0;j+=point_inv){
             let ptext = j.toFixed(1);
@@ -336,11 +339,11 @@
     <table id="points">
       <thead>
         <tr>
-          <th style="font-size: 44px;">選手番号</th>
-          <td><input type="number" id="PlayerNo" class="PlayerNo"/></td>
-          <th>得点</th>
-          <td><div id="totalpoint">0.0</div></td>
-          <td><button id="addbtn" onclick="addrecord()">記録</button></td>
+          <th style="font-size: 44px;" width="20%">選手番号</th>
+          <td width="20%"><input type="number" id="PlayerNo" class="PlayerNo"  title="選手番号" /></td>
+          <th width="20%">得点</th>
+          <td width="20%"><div id="totalpoint">0.0</div></td>
+          <td width="20%"><button id="addbtn" onclick="addrecord()">記録</button></td>
         </tr>
         <tr>
           <th>審判1</th>
@@ -350,11 +353,11 @@
           <th>審判5</th>
         </tr>
         <tr>
-          <td><input type="number" id="point1" class="point" /></td>
-          <td><input type="number" id="point2" class="point" /></td>
-          <td><input type="number" id="point3" class="point" /></td>
-          <td><input type="number" id="point4" class="point" /></td>
-          <td><input type="number" id="point5" class="point" /></td>
+          <td><input type="number" id="point1" class="point" min="5.0" max="10.0" title="得点1" /></td>
+          <td><input type="number" id="point2" class="point" min="5.0" max="10.0" title="得点2" /></td>
+          <td><input type="number" id="point3" class="point" min="5.0" max="10.0" title="得点3" /></td>
+          <td><input type="number" id="point4" class="point" min="5.0" max="10.0" title="得点4" /></td>
+          <td><input type="number" id="point5" class="point" min="5.0" max="10.0" title="得点5" /></td>
         </tr>
       </thead>
       <tbody>
